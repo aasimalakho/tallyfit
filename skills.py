@@ -1,0 +1,85 @@
+"""
+A curated vocabulary of skills/tools/domains common in freelance job posts
+(tech, design, writing, marketing, ops) plus light synonym handling.
+No ML model — pure keyword + synonym matching.
+"""
+
+SYNONYMS = {
+    "javascript": ["js", "javascript", "ecmascript"],
+    "typescript": ["ts", "typescript"],
+    "python": ["python", "py"],
+    "react": ["react", "react.js", "reactjs"],
+    "node": ["node", "node.js", "nodejs"],
+    "machine learning": ["machine learning", "ml"],
+    "deep learning": ["deep learning", "dl"],
+    "artificial intelligence": ["artificial intelligence", "ai"],
+    "natural language processing": ["natural language processing", "nlp"],
+    "large language models": ["large language models", "llm", "llms"],
+    "rag": ["rag", "retrieval augmented generation", "retrieval-augmented generation"],
+    "api": ["api", "apis", "rest api", "restful api"],
+    "fastapi": ["fastapi"],
+    "flask": ["flask"],
+    "django": ["django"],
+    "sql": ["sql", "mysql", "postgresql", "postgres"],
+    "nosql": ["nosql", "mongodb", "mongo"],
+    "wordpress": ["wordpress", "wp"],
+    "seo": ["seo", "search engine optimization"],
+    "ui/ux": ["ui/ux", "ui", "ux", "user interface", "user experience"],
+    "figma": ["figma"],
+    "html": ["html", "html5"],
+    "css": ["css", "css3"],
+    "tailwind": ["tailwind", "tailwindcss"],
+    "aws": ["aws", "amazon web services"],
+    "docker": ["docker", "containerization"],
+    "git": ["git", "github", "gitlab", "version control"],
+    "data analysis": ["data analysis", "data analytics"],
+    "data science": ["data science"],
+    "excel": ["excel", "spreadsheets", "google sheets"],
+    "project management": ["project management", "pm"],
+    "agile": ["agile", "scrum", "kanban"],
+    "content writing": ["content writing", "copywriting", "blog writing"],
+    "social media": ["social media", "social media marketing"],
+    "email marketing": ["email marketing"],
+    "graphic design": ["graphic design"],
+    "video editing": ["video editing"],
+    "customer service": ["customer service", "customer support"],
+    "sales": ["sales", "lead generation"],
+    "tensorflow": ["tensorflow"],
+    "pytorch": ["pytorch"],
+    "langchain": ["langchain"],
+    "streamlit": ["streamlit"],
+    "fintech": ["fintech", "financial technology"],
+    "ecommerce": ["ecommerce", "e-commerce"],
+    "shopify": ["shopify"],
+    "android": ["android"],
+    "ios": ["ios", "swift"],
+    "react native": ["react native"],
+    "chatbot": ["chatbot", "chatbots", "conversational ai"],
+    "automation": ["automation", "workflow automation"],
+    "cnn": ["cnn", "convolutional neural network"],
+    "computer vision": ["computer vision", "image classification"],
+    "fastai": ["fastai"],
+    "java": ["java"],
+    "c++": ["c++", "cpp"],
+    "php": ["php"],
+    "laravel": ["laravel"],
+    "vue": ["vue", "vue.js", "vuejs"],
+    "next.js": ["next.js", "nextjs"],
+    "blockchain": ["blockchain", "web3", "crypto"],
+    "google ads": ["google ads", "ppc", "paid ads"],
+    "branding": ["branding", "brand identity"],
+    "voiceover": ["voiceover", "voice over"],
+    "translation": ["translation", "localization"],
+    "data entry": ["data entry"],
+    "virtual assistant": ["virtual assistant", "va"],
+    "accounting": ["accounting", "bookkeeping"],
+    "legal writing": ["legal writing", "contract drafting"],
+}
+
+# Build a flat lookup: variant -> canonical skill name
+VARIANT_TO_CANONICAL = {}
+for canonical, variants in SYNONYMS.items():
+    for v in variants:
+        VARIANT_TO_CANONICAL[v.lower()] = canonical
+
+ALL_VARIANTS_SORTED = sorted(VARIANT_TO_CANONICAL.keys(), key=len, reverse=True)
