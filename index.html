@@ -469,6 +469,18 @@ cvInput.addEventListener('change', async (e) => {
     cvSkills = findSkills(cvText);
     renderChips(cvChips, cvSkills, { bg:'#E4F6EE', fg:'#22A87C' });
     cvLive.classList.add('on');
+
+    // Pendo Track: successful CV upload and parse
+    if (typeof pendo !== 'undefined') {
+      pendo.track("cv_uploaded", {
+        file_name: file.name,
+        file_type: ext,
+        file_size: file.size,
+        text_length: cvText.trim().length,
+        skills_detected_count: cvSkills.size,
+        skills_detected: Array.from(cvSkills).slice(0, 10).join(", ")
+      });
+    }
   } catch (err) {
     cvError.textContent = err.message || "Couldn't read that file";
     cvError.style.display = 'block';
@@ -476,6 +488,16 @@ cvInput.addEventListener('change', async (e) => {
     cvFname.classList.remove('pulse');
     cvText = "";
     renderChips(cvChips, new Set(), {});
+
+    // Pendo Track: CV upload or parsing failed
+    if (typeof pendo !== 'undefined') {
+      pendo.track("cv_upload_failed", {
+        file_name: file.name,
+        file_type: file.name.split('.').pop().toLowerCase(),
+        file_size: file.size,
+        error_message: (err.message || "Unknown error").substring(0, 200)
+      });
+    }
   }
   updateGoState();
 });
@@ -555,6 +577,22 @@ goBtn.addEventListener('click', () => {
     gaps: Array.from(gaps).slice(0, 5),
     pitch_opener: pitch
   });
+
+  // Pendo Track: fit score generated
+  if (typeof pendo !== 'undefined') {
+    pendo.track("fit_score_generated", {
+      fit_score: score,
+      band: bandOf(score),
+      matching_skills_count: matched.size,
+      gaps_count: gaps.size,
+      matching_skills: Array.from(matched).slice(0, 6).join(", "),
+      gaps: Array.from(gaps).slice(0, 5).join(", "),
+      cv_skills_count: cvSkills.size,
+      job_skills_count: jobSkills.size,
+      has_pitch_opener: !!pitch,
+      used_word_overlap: jobSkills.size === 0
+    });
+  }
 });
 </script>
 </body>
