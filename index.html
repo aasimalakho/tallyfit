@@ -238,11 +238,11 @@
     <div class="panel-grid">
       <div class="panel">
         <div class="panel-label"><span class="name">Your CV</span><span class="live" id="cvLive">● read</span></div>
-        <label class="drop" id="dropCv">
+        <div class="drop" id="dropCv">
           <span class="fname" id="cvFname">Click to upload your CV</span>
           <span class="hint" id="cvHint">PDF · DOCX · TXT</span>
           <input type="file" id="cvInput" accept=".pdf,.docx,.txt" />
-        </label>
+        </div>
         <div class="file-error" id="cvError" style="display:none;"></div>
         <div class="chiprow" id="cvChips"><span class="chip-empty">Your skills will show here once it's uploaded.</span></div>
       </div>
@@ -370,6 +370,7 @@ function findSkills(text){
 
 let cvTextGlobal = "";
 
+const dropCv = document.getElementById('dropCv');
 const cvInput = document.getElementById('cvInput');
 const cvFname = document.getElementById('cvFname');
 const cvHint = document.getElementById('cvHint');
@@ -384,6 +385,13 @@ const jobChips = document.getElementById('jobChips');
 const goBtn = document.getElementById('goBtn');
 const errorBox = document.getElementById('errorBox');
 const resultBox = document.getElementById('resultBox');
+
+// Direct Click fallback to trigger hidden upload input
+dropCv.addEventListener('click', (e) => {
+  if (e.target !== cvInput) {
+    cvInput.click();
+  }
+});
 
 function renderChips(text, containerElement, fallbackText) {
   const detected = findSkills(text);
@@ -522,11 +530,3 @@ goBtn.addEventListener('click', async () => {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-  
