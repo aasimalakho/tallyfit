@@ -4,15 +4,6 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Tallyfit — know before you bid</title>
-<script>
-(function(apiKey){
-    (function(p,e,n,d,o){var v,w,x,y,z;o=p[d]=p[d]||{};o._q=o._q||[];
-    v=['initialize','identify','updateOptions','pageLoad','track','trackAgent'];for(w=0,x=v.length;w<x;++w)(function(m){
-    o[m]=o[m]||function(){o._q[m===v[0]?'unshift':'push']([m].concat([].slice.call(arguments,0)));};})(v[w]);
-    y=e.createElement(n);y.async=!0;y.src='https://cdn.pendo.io/agent/static/'+apiKey+'/pendo.js';
-    z=e.getElementsByTagName(n)[0];z.parentNode.insertBefore(y,z);})(window,document,'script','pendo');
-})('4f38b0e7-8d94-431b-8c48-91c16865fd59');
-</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght=500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -177,9 +168,6 @@
   .pitch{ margin-top:30px; border-top:1px solid var(--line); padding-top:24px; }
   .pitch p{ font-style:italic; font-size:16px; line-height:1.6; color:var(--ink); }
 
-  .pulse{ animation:pulse 1.3s ease-in-out infinite; }
-  @keyframes pulse{ 0%,100%{opacity:.35} 50%{opacity:1} }
-
   footer{ text-align:center; padding:50px 24px; color:var(--ink-soft); font-size:13px; }
   footer .footer-logo{ font-family:'Sora', sans-serif; font-weight:800; color:var(--ink); margin-bottom:6px; }
 </style>
@@ -253,7 +241,7 @@
         <label class="drop" id="dropCv">
           <span class="fname" id="cvFname">Click to upload your CV</span>
           <span class="hint" id="cvHint">PDF · DOCX · TXT</span>
-          <input type="file" id="cvInput" accept=".pdf,.docx,.txt,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+          <input type="file" id="cvInput" accept=".pdf,.docx,.txt" />
         </label>
         <div class="file-error" id="cvError" style="display:none;"></div>
         <div class="chiprow" id="cvChips"><span class="chip-empty">Your skills will show here once it's uploaded.</span></div>
@@ -314,14 +302,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
-try {
-  if (typeof pendo !== 'undefined') {
-    pendo.initialize({ visitor: { id: '' } });
-  }
-} catch (e) {
-  console.warn('Pendo failed to initialize:', e);
-}
-
 let pdfjsReady = false;
 try {
   if (typeof pdfjsLib !== 'undefined') {
@@ -329,7 +309,7 @@ try {
     pdfjsReady = true;
   }
 } catch (e) {
-  console.warn('pdf.js failed to initialize:', e);
+  console.warn("pdfjs worker setup failed");
 }
 
 const SYNONYMS = {
@@ -377,7 +357,7 @@ for (const [canonical, variants] of Object.entries(SYNONYMS)) {
 }
 const ALL_VARIANTS = Object.keys(VARIANT_TO_CANONICAL).sort((a,b) => b.length - a.length);
 
-function escapeRegex(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function escapeRegex(s){ return s.replace(/[.*+?^${}()|[\\\\\\]]/g, '\\\\$&'); }
 function findSkills(text){
   const lower = text.toLowerCase();
   const found = new Set();
@@ -387,33 +367,6 @@ function findSkills(text){
   }
   return found;
 }
-function wordOverlapScore(cvText, jobText){
-  const stop = new Set(["the","and","for","with","you","your","a","an","to","of","in","on","is","are","we","our","this","that","be","as","or","will","have","has","it","at","by","from","their"]);
-  const words = t => new Set((t.toLowerCase().match(/[a-z]{3,}/g) || []).filter(w => !stop.has(w)));
-  const cvW = words(cvText), jobW = words(jobText);
-  if (jobW.size === 0) return 50;
-  let overlap = 0;
-  for (const w of cvW) if (jobW.has(w)) overlap++;
-  return Math.max(15, Math.min(100, Math.round((overlap / jobW.size) * 220)));
-}
-
-const HEADLINES = {
-  strong: [
-    "This is squarely in your lane — worth a proposal.",
-    "Strong overlap here. This one's worth your time.",
-    "You tick most of the boxes this client is after."
-  ],
-  mid: [
-    "A real overlap, with a few gaps worth addressing upfront.",
-    "Decent fit — frame your gaps as things you're already across.",
-    "You're in the running, but not a slam dunk."
-  ],
-  weak: [
-    "Not much overlap — this one's a stretch.",
-    "Thin alignment here. Probably not your best use of a credit.",
-    "This is a reach more than a fit, based on what's stated."
-  ]
-};
 
 let cvTextGlobal = "";
 
@@ -466,106 +419,4 @@ cvInput.addEventListener('change', async (e) => {
     } else if (file.type === "application/pdf" || file.name.endsWith('.pdf')) {
       if (!pdfjsReady) throw new Error("PDF parser library not loaded yet.");
       const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      let fullText = "";
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        fullText += textContent.items.map(item => item.str).join(" ") + "\n";
-      }
-      cvTextGlobal = fullText;
-    } else if (file.name.endsWith('.docx')) {
-      const arrayBuffer = await file.arrayBuffer();
-      const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
-      cvTextGlobal = result.value;
-    } else {
-      throw new Error("Unsupported file format. Please upload PDF, DOCX, or TXT.");
-    }
-
-    if (cvTextGlobal.trim().length < 20) {
-      throw new Error("Could not extract enough text from this file.");
-    }
-
-    cvLive.classList.add('on');
-    renderChips(cvTextGlobal, cvChips, "Your skills will show here once it's uploaded.");
-    checkReadyState();
-
-  } catch (err) {
-    cvError.textContent = err.message;
-    cvError.style.display = 'block';
-    cvLive.classList.remove('on');
-    cvTextGlobal = "";
-    checkReadyState();
-  }
-});
-
-jobTextArea.addEventListener('input', () => {
-  const text = jobTextArea.value;
-  if (text.trim().length > 5) {
-    jobLive.classList.add('on');
-    renderChips(text, jobChips, "Requirements will show here as you type.");
-  } else {
-    jobLive.classList.remove('on');
-    jobChips.innerHTML = '<span class="chip-empty">Requirements will show here as you type.</span>';
-  }
-  checkReadyState();
-});
-
-goBtn.addEventListener('click', async () => {
-  errorBox.style.display = 'none';
-  resultBox.classList.remove('show');
-  goBtn.disabled = true;
-  goBtn.textContent = "Checking...";
-
-  try {
-    const response = await fetch('/api/match', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        cv_text: cvTextGlobal,
-        job_text: jobTextArea.value
-      })
-    });
-
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "Failed to process match.");
-
-    document.getElementById('scoreNum').textContent = data.score;
-    document.getElementById('bandTag').textContent = data.score >= 70 ? "STRONG FIT" : (data.score >= 40 ? "MID OVERLAP" : "WEAK ALIGNMENT");
-    document.getElementById('bandTag').style.color = data.score >= 70 ? "var(--mint)" : (data.score >= 40 ? "var(--gold)" : "var(--coral-deep)");
-    document.getElementById('headlineText').textContent = data.headline;
-
-    const circleArc = document.getElementById('scoreArc');
-    const circumference = 327; 
-    const offset = circumference - (data.score / 100) * circumference;
-    circleArc.style.strokeDashoffset = offset;
-    circleArc.style.stroke = data.score >= 70 ? "var(--mint)" : (data.score >= 40 ? "var(--gold)" : "var(--coral)");
-
-    document.getElementById('matchedTags').innerHTML = data.matching_skills.length ? 
-      data.matching_skills.map(s => `<span class="tag" style="background:var(--mint-soft); color:var(--mint);">${s}</span>`).join('') : '<em style="font-size:13px;color:var(--ink-soft)">None detected</em>';
-      
-    document.getElementById('gapTags').innerHTML = data.gaps.length ? 
-      data.gaps.map(s => `<span class="tag" style="background:#FFEDEA; color:var(--coral-deep);">${s}</span>`).join('') : '<em style="font-size:13px;color:var(--ink-soft)">No obvious gaps!</em>';
-
-    const pitchBlock = document.getElementById('pitchBlock');
-    if (data.pitch_opener) {
-      document.getElementById('pitchText').textContent = `"${data.pitch_opener}"`;
-      pitchBlock.style.display = 'block';
-    } else {
-      pitchBlock.style.display = 'none';
-    }
-
-    resultBox.classList.add('show');
-    resultBox.scrollIntoView({ behavior: 'smooth' });
-
-  } catch (err) {
-    errorBox.textContent = err.message;
-    errorBox.style.display = 'block';
-  } finally {
-    goBtn.disabled = false;
-    goBtn.textContent = "Check the fit";
-  }
-});
-</script>
-</body>
-</html>
+      const pdf = await p
