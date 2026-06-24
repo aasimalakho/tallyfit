@@ -253,7 +253,7 @@
         <label class="drop" id="dropCv">
           <span class="fname" id="cvFname">Click to upload your CV</span>
           <span class="hint" id="cvHint">PDF · DOCX · TXT</span>
-          <input type="file" id="cvInput" accept=".pdf,.docx,.txt" />
+          <input type="file" id="cvInput" accept=".pdf,.docx,.txt,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
         </label>
         <div class="file-error" id="cvError" style="display:none;"></div>
         <div class="chiprow" id="cvChips"><span class="chip-empty">Your skills will show here once it's uploaded.</span></div>
@@ -399,5 +399,4 @@ function wordOverlapScore(cvText, jobText){
 
 const HEADLINES = {
   strong: ["This is squarely in your lane — worth a proposal.", "Strong overlap here. This one's worth your time.", "You tick most of the boxes this client is after."],
-  mid: ["A real overlap, with a few gaps worth addressing upfront.", "Decent fit — frame your gaps as things you're already across.", "You're in the running, but not a slam dunk."],
-  weak: ["Not much overlap — this one's a stretch.", "Th
+  mid: ["A real overlap, with a few gaps worth addressing upfront.", "Decent fit — frame your gaps as things you're already across.", "You'
